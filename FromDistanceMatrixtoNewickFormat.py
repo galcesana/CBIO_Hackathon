@@ -27,7 +27,7 @@ def build_nj_tree_from_distance_matrix(distance_file, newick_outfile):
     #   ['', 'sample1', 'sample2', 'sample3', ...]
     header_fields = lines[0].split('\t')
     # sample names (exclude the first column which might be empty or a label)
-    sample_names = header_fields[1:]
+    sample_names = header_fields
     num_samples = len(sample_names)
 
     # Parse the NxN distance matrix rows

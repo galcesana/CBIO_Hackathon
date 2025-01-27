@@ -1,0 +1,110 @@
+import re
+from os import fdopen
+
+def to_newick(tree):
+    """
+    Convert a tree dictionary (as returned by parse) back to a Newick-format string.
+    """
+
+    def recurse(node):
+        # If there are child nodes, enclose them in parentheses
+        if node['children']:
+            children_str = ",".join(recurse(child) for child in node['children'])
+            name_part = node['name'] if node['name'] else ""
+            length_part = f":{node['length']}" if node['length'] is not None else ""
+            return f"({children_str}){name_part}{length_part}"
+        else:
+            # This is a leaf node
+            name_part = node['name'] if node['name'] else ""
+            length_part = f":{node['length']}" if node['length'] is not None else ""
+            return f"{name_part}{length_part}"
+
+    # Build the string for the entire tree and add a semicolon
+    return recurse(tree) + ";"
+
+def parse(newick):
+    tokens = re.finditer(r"([^:;,()\s]*)(?:\s*:\s*([\d.]+)\s*)?([,);])|(\S)", newick+";")
+
+    def recurse(nextid = 0, parentid = -1): # one node
+        thisid = nextid;
+        children = []
+
+        name, length, delim, ch = next(tokens).groups(0)
+        if ch == "(":
+            while ch in "(,":
+                node, ch, nextid = recurse(nextid+1, thisid)
+                children.append(node)
+            name, length, delim, ch = next(tokens).groups(0)
+        return {"id": thisid, "name": name, "length": float(length) if length else None,
+                "parentid": parentid, "children": children}, delim, nextid
+
+    return recurse()[0]
+
+# sample_vectors = None
+def do_and(result):
+    res_vec = []
+    n = len(list(result.values())[0])
+    for i in range(n):
+        res = 1
+        for vec in result.values():
+            if vec[i] == 0:
+                res = 0
+        res_vec.append(res)
+    return res_vec
+
+
+def read_matrix(path):
+    # Read the presence/absence file
+    with open(path, 'r') as f:
+        lines = [line.strip() for line in f if line.strip()]
+
+    # First line is header: variant_id, sample1, sample2, ...
+    header = lines[0].split('\t')
+    sample_names = header[1:]  # Exclude 'variant_id'
+    num_samples = len(sample_names)
+
+    # Initialize a list (or dict) to hold each sample's presence/absence vector
+    # Key: sample_name, Value: list of 0/1 for each variant
+    samp_vectors = {sample: [] for sample in sample_names}
+
+    # Read each subsequent line (one per variant)
+    for line in lines[1:]:
+        fields = line.split('\t')
+        variant_id = fields[0]  # not needed for distance calculations, but present
+        calls = fields[1:]  # the 0/1 calls for each sample
+
+        # Store the presence/absence in each sample's vector
+        for i, sample in enumerate(sample_names):
+            samp_vectors[sample].append(int(calls[i]))
+    return samp_vectors
+
+def distance(v1, v2):
+    dist = 0
+    for i in range(len(v1)):
+        if v1[i] != v2[i]:
+            dist += 1
+    return dist
+
+
+def yoel_is_literally_a(donkey_monkey):
+    if not donkey_monkey["children"]:
+        #change to a global variable later so it will not run 6o times
+        samp_vectors = read_matrix(r'C:\Users\GSAMSON\PycharmProjects\pythonProject100\3')
+        return samp_vectors[donkey_monkey["name"]]
+    result = {}
+    for child in donkey_monkey["children"]:
+        result[child['id']] = yoel_is_literally_a(child)
+    my_vector = do_and(result)
+    for child in donkey_monkey["children"]:
+        child['length'] = distance(my_vector, result[child['id']])
+    return my_vector
+
+
+def main():
+    stupid_baby = parse("((PD5147c_lo044:1512.17450,((PD5147c_lo073:1495.47673,PD5147c_lo072:1522.52327)Inner41:33.24007,(((((((PD5147c_lo085:1769.74490,(PD5147c_lo069:1458.81463,PD5147c_lo048:1359.18537)Inner43:19.25510)Inner47:5.21559,(PD5147c_lo057:1556.38438,(PD5147c_lo079:1580.36629,PD5147c_lo047:1530.63371)Inner39:8.61562)Inner40:29.03441)Inner48:13.22005,(((PD5147c_lo081:1366.33449,PD5147c_lo045:1320.66551)Inner11:62.45221,(PD5147c_lo090:1408.08977,PD5147c_lo028:1108.91023)Inner10:67.04779)Inner14:142.37672,((PD5147c_lo049:1414.48614,(PD5147c_lo070:1117.56083,PD5147c_lo043:1218.43917)Inner9:34.51386)Inner12:140.66031,PD5147c_lo013:1001.33969)Inner27:50.18578)Inner42:33.48307)Inner52:16.32667,((PD5147c_lo061:1630.85755,(PD5147c_lo089:1488.18254,PD5147c_lo052:1339.81746)Inner2:170.14245)Inner18:105.91731,PD5147c_lo011:1423.08269)Inner45:34.35302)Inner57:2.35521,(PD5147c_lo067:1580.77919,PD5147c_lo010:1217.22081)Inner46:32.69947)Inner58:9.95695,(PD5147c_lo078:1450.41564,(((PD5147c_lo094:1632.56612,PD5147c_lo063:1413.43388)Inner38:21.34741,(PD5147c_lo076:1600.08700,PD5147c_lo009:1226.91300)Inner21:110.65259)Inner49:19.43574,((((PD5147c_lo075:1485.27441,(PD5147c_lo082:1537.52364,PD5147c_lo071:1337.47636)Inner26:47.72559)Inner37:34.47388,(PD5147c_lo092:1438.57205,((PD5147c_lo087:1330.48438,PD5147c_lo084:1033.51562)Inner1:201.55897,PD5147c_lo066:1401.44103)Inner23:47.42795)Inner34:57.02612)Inner50:9.86574,((PD5147c_lo074:1586.52367,PD5147c_lo068:1502.47633)Inner31:29.78418,((PD5147c_lo077:1541.21806,PD5147c_lo065:1386.78194)Inner20:59.96440,(PD5147c_lo064:1431.82622,PD5147c_lo017:1100.17378)Inner28:10.03560)Inner30:32.71582)Inner36:53.43114)Inner53:4.59894,((PD5147c_lo086:1462.86603,(PD5147c_lo083:1341.76497,PD5147c_lo056:1650.23503)Inner29:21.13397)Inner33:10.40352,((PD5147c_lo018:1079.13520,(PD5147c_lo042:1505.48500,PD5147c_lo012:1109.51500)Inner15:7.86480)Inner16:20.39487,((PD5147c_lo059:1500.91996,PD5147c_lo051:1119.08004)Inner8:48.15445,PD5147c_lo006:977.84555)Inner13:101.23013)Inner19:80.97148)Inner35:60.70184)Inner54:1.82402)Inner55:16.95936)Inner56:12.52260)Inner60:5.20196,(PD5147c_lo058:1790.01346,(PD5147c_lo060:1580.31805,(((PD5147c_lo091:1309.65770,PD5147c_lo088:1485.34230)Inner22:26.82851,PD5147c_lo050:1595.17149)Inner24:37.66066,(PD5147c_lo041:1531.13926,(PD5147c_lo053:1410.00374,(PD5147c_lo062:1186.83621,(PD5147c_lo055:1264.07839,(((PD5147c_lo080:1254.01613,PD5147c_lo054:1249.98387)Inner3:10.32787,PD5147c_lo032:854.67213)Inner4:26.32917,PD5147c_lo003:1294.17083)Inner5:9.17161)Inner6:22.28879)Inner7:132.30876)Inner17:59.45449)Inner25:26.08934)Inner32:40.17414)Inner44:23.09201)Inner51:24.15512)Inner61:7.73445)Inner62:6.15143)Inner63:1.82550,(PD5147c_lo024:1480.84880,PD5147c_lo004:1169.15120)Inner59:10.19635,PD5147c_lo093:1579.80365)Inner64:0.00000;")
+    yoel_is_literally_a(stupid_baby)
+    print(to_newick(stupid_baby))
+
+
+if __name__ == "__main__":
+    main()
