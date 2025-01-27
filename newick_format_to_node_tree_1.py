@@ -1,6 +1,7 @@
 import re
 from os import fdopen
 from Bio import Phylo
+from io import StringIO
 
 def to_newick(tree):
     """
@@ -123,13 +124,21 @@ def read_newick_file(file_path):
         newick_string = file.read().strip()
     return newick_string
 
+# Convert the Newick string to a Tree object
+def newick_string_to_tree(newick_string):
+    # Use StringIO to treat the string like a file handle
+    tree = Phylo.read(StringIO(newick_string), "newick")
+    return tree
+
+
 def main(newick_tree_path, presence_matrix_path, improved_tree_path):
     tree = read_newick_file(newick_tree_path)
     tree = parse(tree)
     improve_tree(tree, presence_matrix_path)
     new_tree = to_newick(tree)
     print(new_tree)
-    # Phylo.write(new_tree, improved_tree_path, "newick")
+    improved_tree = newick_string_to_tree(new_tree)
+    Phylo.write(improved_tree, improved_tree_path, "newick")
 
 if __name__ == "__main__":
     main()

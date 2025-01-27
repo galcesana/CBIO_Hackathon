@@ -65,17 +65,17 @@ def main(distance_file, newick_outfile):
     Usage:
        python build_tree.py distance_matrix.tsv output_tree.nwk
     """
-    # if len(sys.argv) != 3:
-    #     print("Usage: python build_tree.py <distance_matrix.tsv> <output_tree.nwk>")
-    #     sys.exit(1)
-
-    # distance_file = sys.argv[1]
-    # newick_outfile = sys.argv[2]
-
     build_nj_tree_from_distance_matrix(distance_file, newick_outfile)
 
     print(f"Neighbor-Joining tree written to: {newick_outfile}")
 
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) != 3:
+        print("Usage: python build_tree.py <distance_matrix.tsv> <output_tree.nwk>")
+        sys.exit(1)
+
+    distance_file = sys.argv[1]
+    newick_outfile = sys.argv[2]
+
+    main(distance_file, newick_outfile)

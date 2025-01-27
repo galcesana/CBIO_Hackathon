@@ -78,15 +78,15 @@ def main(presence_matrix_file, output_file):
     Command-line usage:
         python3 presence_matrix_to_distance_matrix.py presence_matrix.tsv distance_matrix.tsv
     """
-    # if len(sys.argv) != 3:
-    #     print("Usage: python3 presence_matrix_to_distance_matrix.py <presence_matrix.tsv> <distance_matrix.tsv>")
-    #     sys.exit(1)
-
-    # presence_matrix_file = sys.argv[1]
-    # output_file = sys.argv[2]
-
     presence_matrix_to_distance_matrix(presence_matrix_file, output_file)
 
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) != 3:
+        print("Usage: python3 presence_matrix_to_distance_matrix.py <presence_matrix.tsv> <distance_matrix.tsv>")
+        sys.exit(1)
+
+    presence_matrix_file = sys.argv[1]
+    output_file = sys.argv[2]
+
+    main(presence_matrix_file, output_file)
