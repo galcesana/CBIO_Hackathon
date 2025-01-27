@@ -106,21 +106,21 @@ def vcf_to_treemut_matrix(vcf_file, alt_count_threshold=0):
     return sample_list, variant_presence
 
 
-def main():
+def main(vcf_input, matrix_output):
     """
     Command-line usage:
        python3 vcf_to_treemut_matrix.py input.vcf output_matrix.tsv
     """
 
-    if len(sys.argv) < 3:
-        print("Usage: python3 vcf_to_treemut_matrix.py <vcf_input> <matrix_output> [alt_count_threshold]")
-        sys.exit(1)
-
-    vcf_input = sys.argv[1]
-    matrix_output = sys.argv[2]
+    # if len(sys.argv) < 3:
+    #     print("Usage: python3 vcf_to_treemut_matrix.py <vcf_input> <matrix_output> [alt_count_threshold]")
+    #     sys.exit(1)
+    #
+    # vcf_input = sys.argv[1]
+    # matrix_output = sys.argv[2]
     alt_count_threshold = 0
-    if len(sys.argv) == 4:
-        alt_count_threshold = int(sys.argv[3])
+    # if len(sys.argv) == 4:
+    #     alt_count_threshold = int(sys.argv[3])
 
     sample_list, variant_presence = vcf_to_treemut_matrix(vcf_input, alt_count_threshold)
 
